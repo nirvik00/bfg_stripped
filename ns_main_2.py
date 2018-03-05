@@ -209,11 +209,9 @@ class main(object):
                     """
                     li=[]
                     for k in range(i.getNumFloors()+1):
-                        """
                         # stop iteration at height input csv
                         if((4*k)>h):
                             break
-                        """
                         # allow iteration until area is met
                         # stop iteration at height constraint
                         if((4*k)>ht_constraint):
