@@ -82,6 +82,35 @@ class main(object):
         else:
             return True
     
+    def getHtConstraintsData(self, check_for_poly):
+        j=check_for_poly
+        ht_constraint=1000000
+        min_ht=ht_constraint
+        if(self.ht_constraints):
+            for h_ite in self.ht_constraints:
+                bhtc=rs.BoundingBox(h_ite)
+                poly_htc=rs.AddPolyline([bhtc[0],bhtc[1],bhtc[2],bhtc[3],bhtc[0]])
+                int_htcon_sum=0 #if this remains 0 => no change
+                for poly_pt in rs.CurvePoints(j):
+                    t=rs.PointInPlanarClosedCurve(poly_pt,poly_htc)
+                    if(t!=0): #point not outside poly
+                        int_htcon_sum+=1
+                for bound_pt in rs.CurvePoints(poly_htc):
+                    t=rs.PointInPlanarClosedCurve(bound_pt,j)
+                    if(t!=0): #point not outside poly
+                        int_htcon_sum+=1
+                intx1=rs.CurveCurveIntersection(poly_htc,j)
+                if(intx1 and len(intx1)>0):
+                    int_htcon_sum+=1
+                if(int_htcon_sum>0):
+                    ht_constraint=rs.Distance(bhtc[0],bhtc[4])
+                    if(ht_constraint<min_ht):
+                        min_ht=ht_constraint
+                else:
+                    pass
+                rs.DeleteObject(poly_htc)
+        return min_ht
+    
     def genFuncObj_Site(self):
         s=site_obj(self.site)
         pts=s.getPts()
@@ -151,7 +180,9 @@ class main(object):
                     npoly=i.getReqPoly()
                 for j in i.getReqPoly():
                     ####         handle height constraint elements      ####
-                    ht_constraint=100000000
+                    ht_constraint=self.getHtConstraintsData(j)
+                    """
+                    ht_constraint=[]
                     if(self.ht_constraints):
                         for h_ite in self.ht_constraints:
                             bhtc=rs.BoundingBox(h_ite)
@@ -175,6 +206,10 @@ class main(object):
                                 #print('height constraint NOT applied',nm)
                                 pass
                             rs.DeleteObject(poly_htc)
+<<<<<<< HEAD
+=======
+                    """
+>>>>>>> bca7e153bc652407c0c271671f90032f4e0d1626
                     li=[]
                     for k in range(i.getNumFloors()+1):
                         """
