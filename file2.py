@@ -17,7 +17,8 @@ class RunProc(object):
         self.del_srf_ite=[]
         self.del_flr_plate_ite=[]
         self.num_copies=1
-        self.site_crv=rs.GetObject('pick site boundary')
+        self.site_crv=rs.GetObject('pick site curve boundary')
+        self.site_srf=rs.GetObject('pick site surface boundary')
         self.neg_site_crv=rs.GetObjects('pick negative boundary')
         self.ht_constraints=rs.GetObjects('pick height constraints')
         self.site_copy=[]
@@ -26,7 +27,8 @@ class RunProc(object):
         n=rs.GetInteger('Enter number of variations required')
         if(n==0 or n==None):
             n=1
-        FileName="input_1.csv"
+        FileName="input_shenzen_bfg.csv"
+        #FileName="input_simple.csv"
         self.FilePath=rs.GetString("Enter the working directory for the program : ")
         if(self.FilePath==""):
             self.FilePath=os.getcwd()
@@ -54,7 +56,12 @@ class RunProc(object):
                 BoolAR=False
                 print('iteration %s in RunProc()'%(k))
                 temp_site_crv=rs.CopyObject(self.site_crv,[self.max*i,self.max*j,0])
-                self.site_copy.append(temp_site_crv)
+                try:
+                    temp_site_srf=rs.CopyObject(self.site_srf,[self.max*i,self.max*j,0])
+                    self.site_copy.append(temp_site_crv)
+                except:
+                    temp_site_srf=None
+                    self.site_copy=[]
                 try:
                     temp_neg_crv=rs.CopyObjects(self.neg_site_crv,[self.max*i,self.max*j,0])
                 except:
@@ -63,7 +70,7 @@ class RunProc(object):
                     temp_ht_constraints=rs.CopyObjects(self.ht_constraints,[self.max*i,self.max*j,0])
                 except:
                     temp_ht_constraints=None
-                m=main(FileName,temp_site_crv,temp_neg_crv,temp_ht_constraints)
+                m=main(FileName,temp_site_crv,temp_neg_crv,temp_ht_constraints,temp_site_srf)
                 r=m.getInpObj()
                 self.res_obj.append(r)
                 got_flr_area_ite=m.genFuncObj_Site()

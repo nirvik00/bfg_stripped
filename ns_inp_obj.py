@@ -154,8 +154,8 @@ class inp_obj(object):
     def genIntPoly(self, poly):
         cen=rs.CurveAreaCentroid(poly)[0]
         pts=rs.CurvePoints(poly)
-        a=[(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2,0]
-        b=[(pts[0][0]+pts[3][0])/2,(pts[0][1]+pts[3][1])/2,0]
+        a=[(pts[0][0]+pts[1][0])/2,(pts[0][1]+pts[1][1])/2,pts[0][2]]
+        b=[(pts[0][0]+pts[3][0])/2,(pts[0][1]+pts[3][1])/2,pts[0][2]]
         vec1=rs.VectorScale(rs.VectorUnitize(rs.VectorCreate(cen,a)),self.d0/2)
         vec2=rs.VectorScale(rs.VectorUnitize(rs.VectorCreate(cen,b)),self.d1/2)
         p=rs.PointAdd(cen,vec1)

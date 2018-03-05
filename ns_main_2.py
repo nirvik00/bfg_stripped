@@ -7,9 +7,10 @@ from ns_inp_obj import inp_obj as inp_obj
 from ns_site_obj import site_obj as site_obj
 
 class main(object):
-    def __init__(self,x,c,nc,hc):
+    def __init__(self,x,c,nc,hc,srf=None):
         self.neg_site_crv=nc
         self.ht_constraints=hc
+        self.site_srf=srf
         self.path=x
         self.site=rs.coercecurve(c)
         self.req_obj=[]
@@ -121,7 +122,12 @@ class main(object):
                     k+=1
                 if(this_gen_poly is not None):
                     if(len(this_gen_poly)>0):
-                        i.setGenPoly(rs.AddPolyline(this_gen_poly))#boundary-poly
+                        if(self.site_srf ==None):
+                            i.setGenPoly(rs.AddPolyline(this_gen_poly))#boundary-poly
+                        else:
+                            poly=rs.AddPolyline(this_gen_poly)#boundary-poly
+                            topo_poly=self.constructTopoPoly(self.site_srf,poly)
+                            i.setGenPoly(topo_poly)#boundary-poly
         counter=0
         floor_plate=[]
         self.total_floor_area=0
@@ -168,6 +174,7 @@ class main(object):
                             else:
                                 #print('height constraint NOT applied',nm)
                                 pass
+                            rs.DeleteObject(poly_htc)
                     li=[]
                     for k in range(i.getNumFloors()+1):
                         """
@@ -201,7 +208,41 @@ class main(object):
         #rs.CopyObjects(self.floor_plate, [300,0,0])
         #print("total floor area = ", self.total_floor_area)
         return self.total_floor_area
-        
+    
+    def constructTopoPoly(self,srf,poly):
+        if(srf ==None):
+            return
+        poly_pts=rs.CurvePoints(poly)
+        pts=poly_pts
+        req_pts=[]
+        req_pts_dup=[]
+        for i in pts:
+            pt2=rs.AddPoint([i[0],i[1],i[2]-1000])
+            L=rs.AddLine(i,pt2)
+            intx=rs.CurveSurfaceIntersection(L,srf)
+            if(intx and len(intx)>0):
+                pt=[intx[0][1][0],intx[0][1][1],intx[0][1][2]]
+                rs.DeleteObject(L)
+                rs.DeleteObject(pt2)
+                req_pts.append([pt[0],pt[1],pt[2]])
+                req_pts_dup.append([pt[0],pt[1],pt[2]])
+        req_pts_dup.sort(key=operator.itemgetter(2))
+        max_z=req_pts_dup[len(req_pts_dup)-1][2]# higher
+        min_z=req_pts_dup[0][2]# higher
+        high_pts=[]
+        low_pts=[]
+        for i in req_pts:
+            high_pt=[i[0],i[1],max_z]
+            high_pts.append(high_pt)
+            low_pt=[i[0],i[1],min_z]
+            low_pts.append(low_pt)
+        high_pl=rs.AddPolyline(high_pts)
+        low_pl=rs.AddPolyline(low_pts)
+        this_srf=rs.AddLoftSrf([high_pl,low_pl])
+        rs.DeleteObjects([low_pl,poly])
+        rs.CapPlanarHoles(this_srf)
+        return high_pl
+    
     def retResult(self):
         str=[]
         sum_area=0
