@@ -27,8 +27,7 @@ class RunProc(object):
         n=rs.GetInteger('Enter number of variations required')
         if(n==0 or n==None):
             n=1
-        FileName="input_shenzen_bfg.csv"
-        #FileName="input_simple.csv"
+        FileName="input_simple.csv"
         self.FilePath=rs.GetString("Enter the working directory for the program : ")
         if(self.FilePath==""):
             self.FilePath=os.getcwd()
